@@ -18,7 +18,48 @@ public class Outbreak {
      */
     public static boolean[] cheapestTests(int n, int[][] nb, int[] cost) {
         // TODO Mission 5a
-        return new boolean[n];
+        int[] take = new int[n];
+        int[] skip = new int[n];
+        int[] parent = new int[n];
+        boolean[] tested = new boolean[n];
+        Arrays.fill(parent, -1);
+
+        List<Integer> order = new ArrayList<>();
+        order.add(0);
+        int head = 0;
+        while (head < order.size()) {
+            int u = order.get(head++);
+            for (int v : nb[u]) {
+                if (v != parent[u]) {
+                    parent[v] = u;
+                    order.add(v);
+                }
+            }
+        }
+
+        for (int i = n - 1; i >= 0; i--) {
+            int u = order.get(i);
+            take[u] = cost[u];
+            skip[u] = 0;
+            for (int v : nb[u]) {
+                if (v != parent[u]) {
+                    take[u] += Math.min(take[v], skip[v]);
+                    skip[u] += take[v];
+                }
+            }
+        }
+
+        tested[0] = take[0] <= skip[0];
+        for (int i = 1; i < n; i++) {
+            int u = order.get(i);
+            int p = parent[u];
+            if (!tested[p]) {
+                tested[u] = true;
+            } else {
+                tested[u] = take[u] <= skip[u];
+            }
+        }
+        return tested;
     }
 
     /**
@@ -28,6 +69,40 @@ public class Outbreak {
      */
     public static int longestChain(int n, int[][] nb) {
         // TODO Mission 5b
-        return -1;
+        int[] top1 = new int[n];
+        int[] top2 = new int[n];
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+
+        List<Integer> order = new ArrayList<>();
+        order.add(0);
+        int head = 0;
+        while (head < order.size()) {
+            int u = order.get(head++);
+            for (int v : nb[u]) {
+                if (v != parent[u]) {
+                    parent[v] = u;
+                    order.add(v);
+                }
+            }
+        }
+
+        int chain = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            int u = order.get(i);
+            for (int v : nb[u]) {
+                if (v != parent[u]) {
+                    int h = top1[v] + 1;
+                    if (h > top1[u]) {
+                        top2[u] = top1[u];
+                        top1[u] = h;
+                    } else if (h > top2[u]) {
+                        top2[u] = h;
+                    }
+                }
+            }
+            chain = Math.max(chain, top1[u] + top2[u]);
+        }
+        return chain;
     }
 }
