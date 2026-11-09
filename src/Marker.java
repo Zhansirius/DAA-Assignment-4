@@ -65,6 +65,49 @@ public class Marker {
      */
     public static int sharedWords(String a, String b, int k) {
         // TODO Mission 4
-        return -1;
+        if (a.length() < k || b.length() < k) return 0;
+        long mod = 1000000007;
+        long base = 131;
+        long top = 1;
+        for (int i = 1; i < k; i++) top = (top * base) % mod;
+
+        Map<Long, List<Integer>> bHashes = new HashMap<>();
+        long hb = 0;
+        for (int i = 0; i < k; i++) hb = (hb * base + b.charAt(i)) % mod;
+        bHashes.computeIfAbsent(hb, x -> new ArrayList<>()).add(0);
+
+        for (int i = 1; i <= b.length() - k; i++) {
+            hb = (hb - (b.charAt(i - 1) * top) % mod + mod) % mod;
+            hb = (hb * base + b.charAt(i + k - 1)) % mod;
+            bHashes.computeIfAbsent(hb, x -> new ArrayList<>()).add(i);
+        }
+
+        long ha = 0;
+        for (int i = 0; i < k; i++) ha = (ha * base + a.charAt(i)) % mod;
+        int count = 0;
+
+        if (bHashes.containsKey(ha)) {
+            for (int idx : bHashes.get(ha)) {
+                if (a.substring(0, k).equals(b.substring(idx, idx + k))) {
+                    count++;
+                    break;
+                }
+            }
+        }
+
+        for (int i = 1; i <= a.length() - k; i++) {
+            ha = (ha - (a.charAt(i - 1) * top) % mod + mod) % mod;
+            ha = (ha * base + a.charAt(i + k - 1)) % mod;
+            if (bHashes.containsKey(ha)) {
+                for (int idx : bHashes.get(ha)) {
+                    if (a.substring(i, i + k).equals(b.substring(idx, idx + k))) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+        return count;
     }
 }
+
